@@ -9,16 +9,19 @@ xz = (x - mean(x)) / std(x);
 pVals = [1 2 10];
 mVals = [1 2 5 10];
 N = length(xz);
+trainFrac = 0.7;
+Ntrain = floor(trainFrac * N);
 
-% Store error statistics for each (p, m)
 MSE = zeros(numel(pVals), numel(mVals));
+MSE_train = zeros(numel(pVals), numel(mVals));
+MSE_test = zeros(numel(pVals), numel(mVals));
 Bias2 = zeros(numel(pVals), numel(mVals));
 VarE = zeros(numel(pVals), numel(mVals));
 
 % Precompute AR coefficients
 aVals = cell(numel(pVals), 1);
 for ip = 1:numel(pVals)
-    aVals{ip} = ar_yw(xz, pVals(ip));
+    aVals{ip} = ar_yw(xz(1:Ntrain), pVals(ip));
 end
 
 figure;
@@ -42,6 +45,13 @@ for im = 1:numel(mVals)
         MSE(ip, im) = mean(e.^2);
         Bias2(ip, im) = mean(e)^2;
         VarE(ip, im) = var(e, 1);
+
+        idxTrain = (p + m):Ntrain;
+        idxTest = max(Ntrain + 1, p + m):N;
+        eTrain = xz(idxTrain) - pred(idxTrain);
+        eTest = xz(idxTest) - pred(idxTest);
+        MSE_train(ip, im) = mean(eTrain.^2);
+        MSE_test(ip, im) = mean(eTest.^2);
         plot(idx, pred(idx), '-', 'LineWidth', 1.5, 'Color', colors(ip, :), ...
             'DisplayName', sprintf('AR(%d)', p));
     end
@@ -58,6 +68,14 @@ end
 
 disp('MSE for each model order p and horizon m (rows: p, columns: m)');
 disp(array2table(MSE, 'VariableNames', compose('m_%d', mVals), ...
+    'RowNames', compose('p_%d', pVals)));
+
+disp('Interpolation (train) MSE for each model order p and horizon m');
+disp(array2table(MSE_train, 'VariableNames', compose('m_%d', mVals), ...
+    'RowNames', compose('p_%d', pVals)));
+
+disp('Prediction (test) MSE for each model order p and horizon m');
+disp(array2table(MSE_test, 'VariableNames', compose('m_%d', mVals), ...
     'RowNames', compose('p_%d', pVals)));
 
 % Bias-variance tradeoff plots

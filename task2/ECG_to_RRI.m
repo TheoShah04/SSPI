@@ -217,20 +217,20 @@ RR = interp1(T_peak_filtered,RR_filtered,TQ,'PCHIP');
 RR_unfiltered_ts=interp1(T_peak(1:end-1),RR_unfiltered,TQ,'PCHIP');
 
 if ANOMALIES_DETECTED==1
-    figure
-    plot(TQ,RR_unfiltered_ts)
-    hold;
-    plot(TQ,RR,'r--','linewidth',2)
-    xlabel('Time (s)')
-    ylabel('RR interval')
-    legend('RRI with anomalies','Output RRI with anomalies removed')
+    
+    % plot(TQ,RR_unfiltered_ts)
+    % hold;
+    % plot(TQ,RR,'r--','linewidth',2)
+    % xlabel('Time (s)')
+    % ylabel('RR interval')
+    % legend('RRI with anomalies','Output RRI with anomalies removed')
 else
     disp('No anomalies detected.')
-    figure
-    set(gca, 'FontSize', 16)
-    plot(TQ,RR,'r','linewidth',2)
-    xlabel('Time (s)')
-    ylabel('RR interval')
+    % figure
+    % set(gca, 'FontSize', 16)
+    % plot(TQ,RR,'r','linewidth',2)
+    % xlabel('Time (s)')
+    % ylabel('RR interval')
 end    
 function [y_peak,T_peak]=ECG_peak_detection_v2(x_ECG,T_ECG,fs,MINPEAKHEIGHT,MINPEAKDISTANCE)
 FontSize = 16; 
@@ -245,7 +245,7 @@ MINPEAKDISTANCE = ceil(MINPEAKDISTANCE*fs);
 if isempty(T_peak)
     disp('Warning. No peaks were identified. Adjust the parameters.')
 else
-    
+    figure
     number_seconds=ceil(length(x_ECG)/fs);
     num_peaks=length(y_peak);
     bpm=ceil(60*num_peaks/number_seconds);    
@@ -263,21 +263,21 @@ end
 
 T_peak=T_peak/fs;
 
-figure
-subplot(2,1,1)
-plot(T_ECG,x_ECG,'k')
-ylabel('ECG')
-hold on;
-plot(T_peak,x_ECG(ceil(T_peak*fs)),'markersize',16,'color','r','Marker','.','linestyle','n')
-plot(T_ECG,ones(size(x_ECG))*MINPEAKHEIGHT,'b--','linewidth',2)
-legend('Filtered ECG','Estimated R peaks','ampthresh')
-h1=gca();
-subplot(2,1,2)
-plot(T_peak(2:end),diff(T_peak),'color','k')
-ylabel('Difference between R peaks (s)')
-xlabel('Time (s)')
-h2=gca();
-linkaxes([h1,h2], 'x');
+% figure
+% subplot(2,1,1)
+% plot(T_ECG,x_ECG,'k')
+% ylabel('ECG')
+% hold on;
+% plot(T_peak,x_ECG(ceil(T_peak*fs)),'markersize',16,'color','r','Marker','.','linestyle','n')
+% plot(T_ECG,ones(size(x_ECG))*MINPEAKHEIGHT,'b--','linewidth',2)
+% legend('Filtered ECG','Estimated R peaks','ampthresh')
+% h1=gca();
+% subplot(2,1,2)
+% plot(T_peak(2:end),diff(T_peak),'color','k')
+% ylabel('Difference between R peaks (s)')
+% xlabel('Time (s)')
+% h2=gca();
+% linkaxes([h1,h2], 'x');
 
 
 function [xECG,fsECG,hpECG,lpECG,fsRRI,ampthresh,timethresh,anomalyparam,ampthresh_autodetect] = init(varargin)

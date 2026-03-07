@@ -1,8 +1,6 @@
-% AR(1) sufficiency for NASDAQ daily returns using PACF and AIC/MDL
 clear; clc;
 
-% Load NASDAQ data
-S = load('NASDAQ.mat');
+S = load('NASDAQ(1) (1).mat');
 if isfield(S, 'NASDAQ')
     NASDAQ = S.NASDAQ;
 else
@@ -10,34 +8,8 @@ else
     NASDAQ = S.(fn{1});
 end
 
-% Extract closing prices and dates
-if istable(NASDAQ)
-    if any(strcmp('Close', NASDAQ.Properties.VariableNames))
-        close = NASDAQ.Close;
-    else
-        close = NASDAQ{:, end};
-    end
-    if any(strcmp('Date', NASDAQ.Properties.VariableNames))
-        dates = NASDAQ.Date;
-    else
-        dates = (1:height(NASDAQ))';
-    end
-elseif isstruct(NASDAQ)
-    if isfield(NASDAQ, 'Close')
-        close = NASDAQ.Close;
-    else
-        fn = fieldnames(NASDAQ);
-        close = NASDAQ.(fn{end});
-    end
-    if isfield(NASDAQ, 'Date')
-        dates = NASDAQ.Date;
-    else
-        dates = (1:numel(close))';
-    end
-else
-    close = NASDAQ(:, end);
-    dates = NASDAQ(:, 1);
-end
+close = NASDAQ.Close; 
+dates = NASDAQ.Date;
 
 close = close(:);
 dates = dates(:);
@@ -45,58 +17,82 @@ dates = dates(:);
 % Snippet of raw data
 disp('First 10 rows of NASDAQ data (Date, Close):');
 disp(table(dates(1:10), close(1:10), 'VariableNames', {'Date','Close'}));
+fprintf('Number of samples (raw close prices): %d\n', numel(close));
 
-% Daily log-returns: log(p_n / p_{n-1})
-r = log(close(2:end) ./ close(1:end-1));
-r = r(~isnan(r));
+% Time series plot of NASDAQ close
+figure;
+plot(dates, close, 'LineWidth', 1);
+xlabel('Date', 'FontSize', 14);
+ylabel('Close', 'FontSize', 14);
+title('NASDAQ Closing Prices', 'FontSize', 14);
+grid on;
+
+% Daily return representations
+r_simple = 100 * (close(2:end) - close(1:end-1)) ./ close(1:end-1);
+r_log = 100 * log(close(2:end) ./ close(1:end-1));
+r_abs = abs(r_simple);
+
+returns = {r_simple, r_log, r_abs};
+return_labels = {'Simple % return', 'Log % return', 'Absolute % return'};
+
+for i = 1:numel(returns)
+    ri = returns{i};
+    ri = ri(~isnan(ri));
+    ri = ri - mean(ri);
+    returns{i} = ri;
+end
+
+% Use simple returns for AIC/MDL
+r = returns{1};
 N = length(r);
 
-% Zero-mean returns
-r = r - mean(r);
-
-% PACF via Yule-Walker for orders 1..maxp
+% ACF plot for simple returns
 maxp = 10;
-pacf = zeros(maxp, 1);
-sigma2 = zeros(maxp + 1, 1); % include p = 0
+figure;
+autocorr(r, 'NumLags', maxp);
+xlabel('Lag', 'FontSize', 14);
+ylabel('ACF', 'FontSize', 14);
+title('Autocorrelation of NASDAQ Returns (Simple %)', 'FontSize', 14);
+grid on;
+
+% PACF plots for each representation
+for i = 1:numel(returns)
+    figure;
+    parcorr(returns{i}, 'NumLags', maxp);
+    xlabel('Lag', 'FontSize', 14);
+    ylabel('PACF', 'FontSize', 14);
+    title(sprintf('PACF of NASDAQ Returns - %s', return_labels{i}), 'FontSize', 14);
+    grid on;
+end
+
+% AR(p) estimation via Econometrics Toolbox for AIC/MDL
+p_list = (0:maxp)';
+AIC = NaN(size(p_list));
+MDL = NaN(size(p_list));
 a1 = NaN;
 
-% p = 0 (white noise) variance
-sigma2(1) = mean(r.^2);
-
-for p = 1:maxp
-    rxx = xcorr(r, p, 'unbiased');          % lags -p..p
-    r0p = rxx(p+1:end);                     % lags 0..p
-    R = toeplitz(r0p(1:p));                 % r0..r_{p-1}
-    rvec = r0p(2:p+1);                      % r1..rp
-    a = R \ rvec;                           % AR(p) coefficients
-    pacf(p) = a(end);                       % last coefficient = PACF(p)
-    sigma2(p + 1) = r0p(1) - a' * rvec;     % prediction error variance
-    if p == 1
-        a1 = a(1);
+for i = 1:numel(p_list)
+    p = p_list(i);
+    mdl = arima(p, 0, 0);
+    mdl.Constant = 0;
+    mdl.Variance = NaN;
+    try
+        [EstMdl, ~, logL] = estimate(mdl, r, 'Display', 'off');
+        numParams = p + 1; % AR coefficients + variance
+        [AIC(i), BIC] = aicbic(logL, numParams, N);
+        MDL(i) = BIC;
+        if p == 1
+            a1 = EstMdl.AR{1};
+        end
+    catch ME
+        warning('AR(%d) estimation failed: %s', p, ME.message);
     end
 end
 
-% Information criteria (standard forms)
-p_list = (0:maxp)';
-AIC = log(sigma2) + (2 * p_list) / N;
-MDL = log(sigma2) + (p_list * log(N)) / N;
 [~, idx_aic] = min(AIC);
 [~, idx_mdl] = min(MDL);
 p_aic = p_list(idx_aic);
 p_mdl = p_list(idx_mdl);
-
-% PACF plot with 95% bounds
-figure;
-stem(1:maxp, pacf, 'filled');
-hold on;
-conf = 1.96 / sqrt(N);
-yline(conf, 'r--');
-yline(-conf, 'r--');
-hold off;
-xlabel('Lag', 'FontSize', 14);
-ylabel('PACF', 'FontSize', 14);
-title('Partial Autocorrelation of NASDAQ Returns', 'FontSize', 14);
-grid on;
 
 figure;
 plot(0:maxp, AIC, '-o', 'DisplayName', 'AIC');
