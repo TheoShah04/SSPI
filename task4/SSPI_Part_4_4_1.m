@@ -1,18 +1,13 @@
 clear; clc; close all;
 
-% AR(2) synthesis model in MATLAB notation:
-% x[n] + 0.9 x[n-1] + 0.2 x[n-2] = eta[n]
-% => x[n] = -0.9 x[n-1] - 0.2 x[n-2] + eta[n]
-
 N = 4000;
 a = [1, 0.9, 0.2];
-muVals = [0.005, 0.01, 0.03, 0.05];   % Four adaptation gains (includes 0.01)
+muVals = [0.005, 0.01, 0.03, 0.05]; 
 
 rng(32);
 eta = randn(N, 1);
 x = filter(1, a, eta);
 
-% Expected predictor coefficients from AR sign convention
 wExpected = -a(2:end).';   % [a1* a2*] = [-0.9 -0.2]
 M = numel(wExpected);
 
@@ -27,11 +22,11 @@ convIdxA2 = nan(numMu, 1);
 jitterA1 = zeros(numMu, 1);
 jitterA2 = zeros(numMu, 1);
 
-ssWin = 800;              % steady-state window length
-tolPct = 0.10;            % 10% of target value
-holdSamples = 40;         % evaluation window length for settling
-requiredFrac = 0.80;      % at least 80% of samples in window must be in tolerance
-tailWin = 800;            % jitter window
+ssWin = 800;% steady-state window length
+tolPct = 0.10;% 10% of target value
+holdSamples = 40;   
+requiredFrac = 0.80;% at least 80% of samples in window must be in tolerance
+tailWin = 800;           
 
 for i = 1:numMu
     mu = muVals(i);
@@ -69,12 +64,6 @@ for i = 1:numMu
         muVals(i), wFinal(1, i), wFinal(2, i), relErr(i), ssMSE(i), c1, c2, jitterA1(i), jitterA2(i));
 end
 
-fprintf('\nInterpretation guide:\n');
-fprintf('- Smaller mu -> slower convergence (larger nConv), but lower jitter in steady state.\n');
-fprintf('- Larger mu -> faster convergence (smaller nConv), but larger coefficient fluctuations and SS-MSE.\n');
-fprintf('- For this AR(2) setup, a1 often settles earlier than a2 because lag-1 structure is stronger.\n');
-
-% Plot 1: Coefficient evolution for each mu
 figure('Name', 'AR(2) LMS Coefficient Evolution for Different \mu');
 tiledlayout(2, 2, 'Padding', 'compact', 'TileSpacing', 'compact');
 for i = 1:numMu
@@ -96,7 +85,6 @@ for i = 1:numMu
     set(gca, 'FontSize', 14);
 end
 
-% Plot 2: Squared-error learning curves for each mu
 figure('Name', 'AR(2) LMS Squared Error for Different \mu');
 hold on;
 for i = 1:numMu
@@ -112,7 +100,6 @@ title('Prediction Error vs n for Different \mu', 'FontSize', 14);
 legend('Location', 'best');
 set(gca, 'FontSize', 14);
 
-% Plot 3: Convergence in (a1, a2) parameter space
 figure('Name', 'AR(2) Parameter-Space Convergence for Different \mu');
 hold on;
 for i = 1:numMu
