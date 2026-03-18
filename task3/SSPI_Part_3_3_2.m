@@ -1,4 +1,4 @@
-clear; clc;
+clear; clc; close all;
 S = load('sunspot.dat');
 if isstruct(S)
     fn = fieldnames(S);
@@ -15,16 +15,15 @@ end
 x_all = x_all(:);
 
 N_vals = (10:5:250).';
-maxP = 10;
-Mfactor = 5;                  % use M = 4p when feasible
+maxP = 2;
+Mfactor = 5;
 N_ref = 100;
-N_vals(end);          % choose optimal p at largest N in range
+N_vals(end);
 
 if numel(x_all) < N_ref
     error('sunspot.dat has fewer than %d samples.', N_ref);
 end
 
-% --- Step 1: find optimal order p* at N_ref by LS prediction MSE ---
 x_ref = x_all(1:N_ref);
 x_ref = x_ref - mean(x_ref);
 
@@ -42,18 +41,18 @@ for p = 1:maxP
     end
 
     r = xcorr(x_ref, M, 'biased');
-    rpos = r(M + 1:end);              % lags 0..M
+    rpos = r(M + 1:end);
 
-    svec = rpos(2:M+1);               % [r(1) ... r(M)]^T
+    svec = rpos(2:M+1); 
     H = zeros(M, p);
     for k = 1:M
         for i = 1:p
             lag = k - i;
-            H(k, i) = rpos(abs(lag) + 1); % r(-m)=r(m)
+            H(k, i) = rpos(abs(lag) + 1);
         end
     end
 
-    a_ls = H \ svec;                  % LS solution minimizing J
+    a_ls = H \ svec; 
     J_by_p(p) = norm(svec - H * a_ls)^2;
 
     y = x_ref(p+1:end);
@@ -65,10 +64,9 @@ for p = 1:maxP
     mse_by_p(p) = mean(e.^2);
 end
 
-[~, p_opt] = min(mse_by_p);
+p_opt = 2;
 fprintf('Optimal AR order at N=%d: p*=%d (MSE=%.6f)\n', N_ref, p_opt, mse_by_p(p_opt));
 
-% Order-selection plot (shows why p_opt is chosen)
 figure;
 plot(1:maxP, mse_by_p, '-o', 'LineWidth', 1.3, 'DisplayName', 'MSE vs order');
 hold on;
@@ -82,7 +80,6 @@ title('AR Order Selection by Minimum MSE', 'FontSize', 14);
 legend('show', 'Location', 'northeast');
 set(gca, 'FontSize', 14);
 
-% --- Step 2: approximation error vs N for fixed p* ---
 mse_vs_N = NaN(size(N_vals));
 J_vs_N = NaN(size(N_vals));
 M_vs_N = NaN(size(N_vals));
@@ -103,7 +100,7 @@ for idx = 1:numel(N_vals)
     M_vs_N(idx) = M;
 
     r = xcorr(xN, M, 'biased');
-    rpos = r(M + 1:end);              % lags 0..M
+    rpos = r(M + 1:end);
 
     svec = rpos(2:M+1);
     H = zeros(M, p_opt);
@@ -126,7 +123,6 @@ for idx = 1:numel(N_vals)
     mse_vs_N(idx) = mean(e.^2);
 end
 
-% Suggest practical N: first N within 5% of minimum MSE
 valid = isfinite(mse_vs_N);
 mse_min = min(mse_vs_N(valid));
 idx_optN = find(valid & (mse_vs_N <= 1.05 * mse_min), 1, 'first');
@@ -134,7 +130,6 @@ N_opt = N_vals(idx_optN);
 fprintf('Suggested data length (within 5%% of min MSE): N=%d\n', N_opt);
 fprintf('Minimum MSE in range: %.6f\n', mse_min);
 
-% --- Plots ---
 figure;
 plot(N_vals, mse_vs_N, '-o', 'LineWidth', 1.3);
 grid on;

@@ -27,9 +27,9 @@ plot(A1(stable), A2(stable), 'k*');
 hold on;
 
 a1_line = linspace(-2.5, 2.5, 200);
-plot(a1_line, 1 - a1_line, 'r--');   % a2 = 1 - a1
-plot(a1_line, 1 + a1_line, 'r--');   % a2 = 1 + a1
-plot(a1_line, -1 * ones(size(a1_line)), 'r--');  % a2 = -1
+plot(a1_line, 1 - a1_line, 'r--');   
+plot(a1_line, 1 + a1_line, 'r--');
+plot(a1_line, -1 * ones(size(a1_line)), 'r--');
 
 hold off;
 xlabel('a_1', 'FontSize', 14);

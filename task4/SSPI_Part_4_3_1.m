@@ -241,8 +241,6 @@ function [yhat, e, W, muHist, errPowHist] = lms_gear(x, z, Nw, cfg)
         yhat(n) = w.' * xvec;
         e(n) = z(n) - yhat(n);
 
-        % Subroutine call:
-        % compute mu(n) for the (n+1)-coefficient update from e(n).
         [muNow, errPowNow] = update_mu_from_error(e(n), muNow, errPowNow, cfg);
 
         w = w + muNow * e(n) * xvec;
@@ -266,7 +264,6 @@ function [muNext, errPowNext] = update_mu_from_error(eNow, muPrev, errPowPrev, c
         muTarget = cfg.muMin + ratio * (cfg.muMax - cfg.muMin);
     end
 
-    % Smooth and clip mu to avoid abrupt/unstable changes
     muNext = cfg.betaMu * muPrev + (1 - cfg.betaMu) * muTarget;
     muNext = min(max(muNext, cfg.muMin), cfg.muMax);
 end

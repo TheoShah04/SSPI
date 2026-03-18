@@ -1,9 +1,9 @@
 clear; clc;
 
-Fs = 32768;                 % [Hz]
-toneDur = 0.25;             % [s]
-idleDur = 0.25;             % [s]
-Nseg = round(toneDur * Fs); % one frame per tone/idle block
+Fs = 32768;
+toneDur = 0.25;
+idleDur = 0.25;
+Nseg = round(toneDur * Fs);
 Nfft = Nseg;
 win = hann(Nseg, 'periodic');
 noverlap = 0;
@@ -106,7 +106,6 @@ for c = 1:numel(noiseVar)
     fprintf('Case %d: accuracy = %.2f %%\n', c, 100*acc);
 end
 
-% Monte Carlo simulation (report-friendly statistics)
 nTrials = 60;
 accMC = zeros(numel(noiseVar), nTrials);
 for tr = 1:nTrials

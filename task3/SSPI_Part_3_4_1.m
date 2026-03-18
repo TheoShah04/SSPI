@@ -55,8 +55,7 @@ yA = sin(2 * pi * f1A * n / Fs) + sin(2 * pi * f2A * n / Fs);
 yB = sin(2 * pi * f1B * n / Fs) + sin(2 * pi * f2B * n / Fs);
 yIdle = zeros(1, N_tone);
 tZoom = n / Fs;
-tWin = 0.015; % 15 ms window to make waveform differences visible
-
+tWin = 0.015; % 15ms window
 figure;
 subplot(3,1,1);
 plot(tZoom, yA, 'b');

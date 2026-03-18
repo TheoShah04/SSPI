@@ -1,4 +1,3 @@
-% Sunspot PACF via Yule-Walker up to p = 10, with and without standardization
 clear; clc;
 
 load sunspot.dat
@@ -9,7 +8,6 @@ maxp = 10;
 
 x0 = x; 
 
-% Standardised
 xz = (x - mean(x)) / std(x);
 
 [pacf0, conf0] = pacf_yw(x0, maxp);
@@ -58,12 +56,12 @@ function [pacf, conf] = pacf_yw(x, maxp)
     pacf = zeros(maxp, 1);
 
     for p = 1:maxp
-        rxx = xcorr(x, p, 'unbiased');      % lags -p..p
-        r0p = rxx(p+1:end);                 % lags 0..p
-        R = toeplitz(r0p(1:p));             % r0..r_{p-1}
-        rvec = r0p(2:p+1);                  % r1..rp
-        a = R \ rvec;                       % Yule-Walker AR(p)
-        pacf(p) = a(end);                   % last coefficient = PACF(p)
+        rxx = xcorr(x, p, 'unbiased');    
+        r0p = rxx(p+1:end);           
+        R = toeplitz(r0p(1:p));  
+        rvec = r0p(2:p+1);
+        a = R \ rvec;      
+        pacf(p) = a(end);     
     end
 
     conf = 1.96 / sqrt(N);

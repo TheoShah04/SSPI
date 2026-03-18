@@ -1,6 +1,6 @@
 clear; clc;
 
-S = load('NASDAQ(1) (1).mat');
+S = load('NASDAQ.mat');
 if isfield(S, 'NASDAQ')
     NASDAQ = S.NASDAQ;
 else
@@ -14,7 +14,6 @@ dates = NASDAQ.Date;
 close = close(:);
 dates = dates(:);
 
-% Snippet of raw data
 disp('First 10 rows of NASDAQ data (Date, Close):');
 disp(table(dates(1:10), close(1:10), 'VariableNames', {'Date','Close'}));
 fprintf('Number of samples (raw close prices): %d\n', numel(close));
@@ -42,7 +41,6 @@ for i = 1:numel(returns)
     returns{i} = ri;
 end
 
-% Use simple returns for AIC/MDL
 r = returns{1};
 N = length(r);
 
@@ -55,6 +53,14 @@ ylabel('ACF', 'FontSize', 14);
 title('Autocorrelation of NASDAQ Returns (Simple %)', 'FontSize', 14);
 grid on;
 
+% PACF plot for closing prices
+figure;
+parcorr(close - mean(close), 'NumLags', maxp);
+xlabel('Lag', 'FontSize', 14);
+ylabel('PACF', 'FontSize', 14);
+title('PACF of NASDAQ Closing Prices', 'FontSize', 14);
+grid on;
+
 % PACF plots for each representation
 for i = 1:numel(returns)
     figure;
@@ -65,8 +71,7 @@ for i = 1:numel(returns)
     grid on;
 end
 
-% AR(p) estimation via Econometrics Toolbox for AIC/MDL
-p_list = (0:maxp)';
+p_list = (1:maxp)';
 AIC = NaN(size(p_list));
 MDL = NaN(size(p_list));
 a1 = NaN;
@@ -95,9 +100,9 @@ p_aic = p_list(idx_aic);
 p_mdl = p_list(idx_mdl);
 
 figure;
-plot(0:maxp, AIC, '-o', 'DisplayName', 'AIC');
+plot(1:maxp, AIC, '-o', 'DisplayName', 'AIC');
 hold on;
-plot(0:maxp, MDL, '-s', 'DisplayName', 'MDL');
+plot(1:maxp, MDL, '-s', 'DisplayName', 'MDL');
 hold off;
 xlabel('Model order p', 'FontSize', 14);
 ylabel('Criterion value', 'FontSize', 14);

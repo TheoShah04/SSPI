@@ -1,15 +1,13 @@
-% CCF estimate for x and y from Section 2.1
 N = 1000;
 rng(42);
-x = randn(N, 1);            % WGN
-b = ones(11, 1);             % MA(9) coefficients
+x = randn(N, 1);           
+b = ones(11, 1);       
 
-y = filter(b, 1, x);        % Filtered output
+y = filter(b, 1, x);  
 
 % Unbiased CCF estimate
 [r_xy, lags] = xcorr(x, y, 'unbiased');
 
-% Plot lags in [-20, 20]
 idx = (lags >= -20) & (lags <= 20);
 figure;
 stem(lags(idx), r_xy(idx), 'filled');

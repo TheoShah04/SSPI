@@ -17,8 +17,6 @@ ylabel('Unbiased ACF estimate');
 title('ACF of MA(9) filtered WGN');
 grid on;
 
-% Graph 1: Fix coefficients (all ones) and vary order
-% Order = M-1, so include M=1 for order 0.
 orders = [1 3 5 9 15];
 figure;
 hold on;
@@ -37,12 +35,11 @@ title('ACF estimate vs MA Order (unit coefficients)');
 legend('show', 'Location', 'northeast');
 grid on;
 
-% Graph 2: Fix order and vary coefficient values (still rectangular)
 M = 9;
 coeffs = {
-    0.5 * ones(M,1), ...                    % Smaller magnitude
-    1.0 * ones(M,1), ...                    % Unit magnitude
-    2.0 * ones(M,1) ...                     % Larger magnitude
+    0.5 * ones(M,1), ...
+    1.0 * ones(M,1), ...      
+    2.0 * ones(M,1) ...       
 };
 labels = {
     'Rectangular (0.5)',

@@ -18,13 +18,12 @@ Ep = zeros(maxp, 1);
 
 for p = 1:maxp
     % Yule-Walker AR(p)
-    rxx = xcorr(xz, p, 'unbiased');      % lags -p..p
-    r0p = rxx(p+1:end);                  % lags 0..p
-    R = toeplitz(r0p(1:p));              % r0..r_{p-1}
-    rvec = r0p(2:p+1);                   % r1..rp
-    a = R \ rvec;                        % AR(p) coefficients
+    rxx = xcorr(xz, p, 'unbiased');   
+    r0p = rxx(p+1:end);         
+    R = toeplitz(r0p(1:p)); 
+    rvec = r0p(2:p+1);      
+    a = R \ rvec;  
 
-    % One-step prediction errors
     e = zeros(N - p, 1);
     for n = p+1:N
         xhat = a' * xz(n-1:-1:n-p);

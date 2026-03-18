@@ -1,10 +1,10 @@
 clear; clc;
 
-Fs = 32768;                 % [Hz]
-toneDur = 0.25;             % [s]
-idleDur = 0.25;             % [s]
+Fs = 32768;  
+toneDur = 0.25;       
+idleDur = 0.25;   
 Nseg = round(toneDur * Fs); % 8192 samples per tone/idle block
-Nfft = Nseg;                % one FFT per block
+Nfft = Nseg; % one FFT per block
 
 rng('shuffle');
 randDigits = randi([0, 9], 1, 8);

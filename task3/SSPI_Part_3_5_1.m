@@ -120,7 +120,7 @@ end
 function [f, Pavg, K] = local_averaged_periodogram(x, fs, winSec)
 x = x(:);
 N = numel(x);
-L = round(winSec * fs);          % window length in samples
+L = round(winSec * fs);% window length in samples
 if L < 8 || N < L
     f = [];
     Pavg = [];
@@ -128,7 +128,7 @@ if L < 8 || N < L
     return;
 end
 
-K = floor(N / L);                % non-overlapping segments
+K = floor(N / L);% non-overlapping segments
 if K < 1
     f = [];
     Pavg = [];
@@ -136,7 +136,7 @@ if K < 1
 end
 
 w = hann(L, 'periodic');
-U = mean(w.^2);                  % window power normalization
+U = mean(w.^2);% window power normalisation
 nHalf = floor(L/2);
 Psum = zeros(nHalf+1, 1);
 

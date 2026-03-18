@@ -1,8 +1,8 @@
 clear; clc;
 
-Fs = 32768;                 % [Hz]
-toneDur = 0.25;             % [s]
-idleDur = 0.25;             % [s]
+Fs = 32768;                
+toneDur = 0.25;          
+idleDur = 0.25;          
 N_tone = round(toneDur * Fs);
 N_idle = round(idleDur * Fs);
 
@@ -17,8 +17,8 @@ numStr = sprintf('020 %d%d%d%d %d%d%d%d', randDigits(1), randDigits(2), ...
 t = (0:numel(yClean)-1) / Fs;
 sigVar = var(yClean);
 
-% Three noise conditions from low to visually immersed
-noiseScale = [0.01, 0.25, 4.00];        % sigma_v^2 = scale * var(signal)
+% Three noise conditions
+noiseScale = [0.01, 0.25, 4.00];
 noiseVar = sigVar * noiseScale;
 snrDB = 10 * log10(sigVar ./ noiseVar);
 
@@ -34,7 +34,6 @@ for k = 1:numel(noiseVar)
     yNoisy{k} = yClean + sqrt(noiseVar(k)) * randn(size(yClean));
 end
 
-% Full-sequence plot: clean + three noisy cases
 figure;
 subplot(4,1,1);
 plot(t, yClean, 'k');
@@ -57,7 +56,6 @@ for k = 1:numel(noiseVar)
     set(gca, 'FontSize', 12);
 end
 
-% Zoomed waveforms for two random keys and one idle segment
 keyIdx = find(~isnan(blockKey));
 pick = keyIdx(randperm(numel(keyIdx), 2));
 idleIdx = find(isnan(blockKey), 1, 'first');
@@ -67,7 +65,7 @@ showNames = {blockLabel{showIdx(1)}, blockLabel{showIdx(2)}, blockLabel{showIdx(
 YblkClean = reshape(yClean, N_tone, []);
 YblkNoisy = cellfun(@(yy) reshape(yy, N_tone, []), yNoisy, 'UniformOutput', false);
 n = (0:N_tone-1) / Fs;
-tWin = 0.015; % 15 ms
+tWin = 0.015; % 15ms
 
 figure;
 for r = 1:3

@@ -1,7 +1,4 @@
 function mat_to_csv(matFile, csvFile, varName)
-%MAT_TO_CSV Convert a MAT variable to CSV.
-%   mat_to_csv() converts NASDAQ.mat -> NASDAQ.csv using the first variable.
-%   mat_to_csv(matFile, csvFile, varName) lets you choose file/variable.
 
 if nargin < 1 || isempty(matFile)
     matFile = 'NASDAQ.mat';

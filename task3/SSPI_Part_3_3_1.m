@@ -31,14 +31,14 @@ for p = 1:maxP
 
     % Need ACF values for lags 0..M
     r = xcorr(x, M, 'biased');
-    rpos = r(M+1:end);          % r(0), r(1), ..., r(M)
+    rpos = r(M+1:end);   
 
-    s = rpos(2:M+1);            % [r(1) ... r(M)]^T
+    s = rpos(2:M+1);  
     H = zeros(M, p);
     for k = 1:M
         for i = 1:p
             lag = k - i;
-            H(k, i) = rpos(abs(lag) + 1); % r(-m) = r(m) for real processes
+            H(k, i) = rpos(abs(lag) + 1);
         end
     end
 
@@ -144,7 +144,7 @@ set(gca, 'FontSize', 14);
 
 % Power spectra
 Nfft = 1024;
-clrPSD = turbo(maxP); % force unique, order-consistent colors
+clrPSD = turbo(maxP);
 
 figure;
 hold on;

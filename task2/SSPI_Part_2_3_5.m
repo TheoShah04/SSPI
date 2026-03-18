@@ -18,7 +18,6 @@ MSE_test = zeros(numel(pVals), numel(mVals));
 Bias2 = zeros(numel(pVals), numel(mVals));
 VarE = zeros(numel(pVals), numel(mVals));
 
-% Precompute AR coefficients
 aVals = cell(numel(pVals), 1);
 for ip = 1:numel(pVals)
     aVals{ip} = ar_yw(xz(1:Ntrain), pVals(ip));
@@ -111,14 +110,13 @@ legend('show', 'Location', 'best');
 function a = ar_yw(x, p)
     % Yule-Walker AR(p) coefficients for x[n] = a1 x[n-1] + ... + ap x[n-p] + e[n]
     rxx = xcorr(x, p, 'unbiased');
-    r0p = rxx(p+1:end);           % lags 0..p
-    R = toeplitz(r0p(1:p));       % r0..r_{p-1}
-    rvec = r0p(2:p+1);            % r1..rp
+    r0p = rxx(p+1:end);  
+    R = toeplitz(r0p(1:p));   
+    rvec = r0p(2:p+1); 
     a = R \ rvec;
 end
 
 function pred = mstep_predict(x, a, p, m)
-    % m-step ahead prediction using recursive AR updates
     N = length(x);
     pred = nan(N, 1);
     for n = p:N-m

@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv, sys, os
 
-# The NASDAQ.mat file was converted to a .csv using Matlab
-# because I had some compatability issues with loading the Table structure
 filepath = "./task2/NASDAQ.csv"
 
 dates, closes = [], []

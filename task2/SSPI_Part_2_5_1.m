@@ -1,18 +1,16 @@
 clear; clc;
 dataDir = fullfile('Recordings_27_28_01_20_Shared');
-fileName = 'P005.csv'; % 5 originally
+fileName = 'P005.csv';
 filePath = fullfile(dataDir, fileName);
 
 data = readmatrix(filePath, 'NumHeaderLines', 1);
-ts = data(:, 1);   % Time sample
-xECG = data(:, 2); % CH1 ECG signal
-fsECG = 500; % Hz (given sampling frequency)
+ts = data(:, 1);
+xECG = data(:, 2);
+fsECG = 500; % Hz
 
-% Boundary time samples and removal window (same units as ts)
 bounds = [7991400, 15823900];
 pad = 100000;
 
-% Compute segment indices from time-sample boundaries
 n = numel(xECG);
 t1a = bounds(1) - pad;
 t1b = bounds(1) + pad;
@@ -30,7 +28,6 @@ seg1 = s1:e1;
 seg2 = s2:e2;
 seg3 = s3:e3;
 
-% Plot each segment in a separate figure
 figure;
 plot(ts(seg1), xECG(seg1), 'k');
 title('P005 - Segment 1');
@@ -52,11 +49,10 @@ xlabel('Time sample');
 ylabel('ECG (CH1)');
 grid on;
 
-% Convert each segment to RR intervals using ECG_to_RRI
 segments = {xECG(seg1), xECG(seg2), xECG(seg3)};
 RRIs = cell(3, 1);
 fsRRI = zeros(3, 1);
-minLen = fsECG * 10; % ECG_to_RRI requires at least 10 s
+minLen = fsECG * 10;
 
 hasButter = exist('butter', 'file') == 2;
 hasFiltfilt = exist('filtfilt', 'file') == 2;
@@ -77,7 +73,7 @@ else
 end
 
 % ---- Autocorrelation of RRI for three trials ----
-maxLag = 50; % adjust as needed
+maxLag = 50;
 for k = 1:3
     if isempty(RRIs{k})
         warning('RRIs{%d} is empty; skipping autocorrelation.', k);
@@ -89,7 +85,7 @@ for k = 1:3
         warning('RRIs{%d} too short; skipping autocorrelation.', k);
         continue;
     end
-    rri = detrend(rri, 'constant'); % zero-mean
+    rri = detrend(rri, 'constant');
     L = min(maxLag, numel(rri) - 1);
     [acf, lags] = local_autocorr(rri, L);
 
@@ -115,10 +111,10 @@ for trial = 1:3
         continue;
     end
 
-    x = detrend(x, 'constant'); % zero-mean
+    x = detrend(x, 'constant');
     sx = std(x);
     if sx > 0
-        x = x / sx; % standardize
+        x = x / sx;
     end
 
     [pacf, conf] = pacf_yw(x, maxp);
@@ -210,8 +206,6 @@ function idx = local_idx_le(ts, t, n)
 end
 
 function local_plot_pde(x, colorSpec, labelStr)
-    % Plot a probability density estimate (PDE). Uses ksdensity if available,
-    % otherwise falls back to a normalized histogram.
     x = x(:);
     x = x(isfinite(x));
     n = numel(x);
@@ -224,11 +218,11 @@ function local_plot_pde(x, colorSpec, labelStr)
         sigma = max(eps, range(x) / 6);
     end
     if exist('ksdensity', 'file') == 2
-        bw = 1.06 * sigma * n^(-1/5); % Silverman's rule
+        bw = 1.06 * sigma * n^(-1/5);
         [f, xi] = ksdensity(x, 'Bandwidth', bw);
         plot(xi, f, 'Color', colorSpec, 'LineWidth', 1.5, 'DisplayName', labelStr);
     else
-        binWidth = 3.5 * sigma * n^(-1/3); % Scott's rule
+        binWidth = 3.5 * sigma * n^(-1/3);
         if ~isfinite(binWidth) || binWidth <= 0
             binWidth = max(eps, range(x) / 40);
         end
@@ -239,7 +233,6 @@ function local_plot_pde(x, colorSpec, labelStr)
 end
 
 function [acf, lags] = local_autocorr(x, maxLag)
-    % Autocorrelation (biased) without toolbox, returns lags -maxLag:maxLag.
     x = x(:);
     n = numel(x);
     acf_pos = zeros(maxLag + 1, 1);
@@ -247,7 +240,7 @@ function [acf, lags] = local_autocorr(x, maxLag)
         acf_pos(k + 1) = (x(1:n-k)' * x(1+k:n)) / n;
     end
     if acf_pos(1) ~= 0
-        acf_pos = acf_pos / acf_pos(1); % normalize
+        acf_pos = acf_pos / acf_pos(1);
     end
     acf = [flipud(acf_pos(2:end)); acf_pos];
     lags = (-maxLag:maxLag).';
@@ -259,11 +252,11 @@ function [pacf, conf] = pacf_yw(x, maxp)
     pacf = zeros(maxp, 1);
 
     for p = 1:maxp
-        r0p = acf_unbiased(x, p);      % lags 0..p
-        R = toeplitz(r0p(1:p));        % r0..r_{p-1}
-        rvec = r0p(2:p+1);             % r1..rp
-        a = R \ rvec;                  % Yule-Walker AR(p)
-        pacf(p) = a(end);              % last coefficient = PACF(p)
+        r0p = acf_unbiased(x, p);
+        R = toeplitz(r0p(1:p));   
+        rvec = r0p(2:p+1); 
+        a = R \ rvec;   
+        pacf(p) = a(end);  
     end
 
     conf = 1.96 / sqrt(N);
@@ -286,12 +279,11 @@ function [MDL, AIC, AICc] = order_select_yw(x, maxp)
     AICc = zeros(maxp, 1);
 
     for p = 1:maxp
-        r0p = acf_unbiased(x, p);      % lags 0..p
-        R = toeplitz(r0p(1:p));        % r0..r_{p-1}
-        rvec = r0p(2:p+1);             % r1..rp
-        a = R \ rvec;                  % AR(p) coefficients
+        r0p = acf_unbiased(x, p);   
+        R = toeplitz(r0p(1:p)); 
+        rvec = r0p(2:p+1); 
+        a = R \ rvec; 
 
-        % One-step prediction errors
         e = zeros(N - p, 1);
         for n = p+1:N
             xhat = a' * x(n-1:-1:n-p);
@@ -306,7 +298,6 @@ function [MDL, AIC, AICc] = order_select_yw(x, maxp)
 end
 
 function r = acf_unbiased(x, maxp)
-    % Unbiased autocorrelation for lags 0..maxp (toolbox-free)
     x = x(:);
     n = numel(x);
     r = zeros(maxp + 1, 1);

@@ -4,7 +4,7 @@ N = 1000;
 sigma = 0.1;
 b = [1, 2, 3, 2, 1];
 a = 1;
-Nw = numel(b) - 1;              % Adaptive filter order (5 coefficients total)
+Nw = numel(b) - 1;          
 M = Nw + 1;
 
 rng(42);
@@ -12,7 +12,6 @@ rng(42);
 x = randn(N, 1);
 y_raw = filter(b, a, x);
 
-% Normalize y to unit variance
 scale = 1 / std(y_raw, 1);
 y = scale * y_raw;
 
@@ -37,7 +36,6 @@ muMaxTheory = 2 / lambdaMax;
 Px = mean(x .^ 2);
 muMaxPractical = 2 / ((Nw + 1) * Px);
 
-% Requested case: mu = 0.01
 mu0 = 0.01;
 [~, e0, W0] = lms(x, z, mu0, Nw);
 
@@ -52,7 +50,6 @@ fprintf('Final LMS coefficients w_end^T = ');
 fprintf('%.4f ', W0(:, end));
 fprintf('\n\n');
 
-% Plot all 5 coefficient trajectories on one graph for mu=0.01
 cmap = lines(M);
 figure('Name', 'Coefficient Evolution (\mu = 0.01)');
 hold on;
@@ -68,7 +65,6 @@ ylabel('Coefficient value');
 title('LMS coefficient evolution (\mu = 0.01)');
 legend('Location', 'best');
 
-% Show squared estimate error for mu=0.01
 figure('Name', 'Squared Estimate Error (\mu = 0.01)');
 plot(e0 .^ 2, 'Color', [0.15 0.15 0.15], 'LineWidth', 0.8, 'DisplayName', 'e^2[n]');
 hold on;
@@ -92,8 +88,8 @@ finalRelErr = zeros(numMu, 1);
 convSample = nan(numMu, 1);
 isDiverged = false(numMu, 1);
 
-tol = 0.05;         % 5% relative distance to Wiener solution
-holdSamples = 50;   % must remain below threshold for this many samples
+tol = 0.05;         
+holdSamples = 50; 
 
 for i = 1:numMu
     mu = muVals(i);
@@ -112,7 +108,6 @@ for i = 1:numMu
     convSample(i) = find_conv_index(relDist, tol, holdSamples);
 end
 
-% Plot all 5 coefficients together for each mu (one tile per mu)
 figure('Name', 'Coefficient Evolution for \mu Sweep');
 tl = tiledlayout(4, 2, 'Padding', 'compact', 'TileSpacing', 'compact');
 for i = 1:numMu
@@ -136,7 +131,6 @@ for i = 1:numMu
 end
 sgtitle(tl, 'Coefficient Evolution for Different \mu', 'FontSize', 18);
 
-% Smoothed squared error for different mu values
 figure('Name', 'Smoothed Squared Error for \mu Sweep');
 hold on;
 for i = 1:numMu
@@ -150,7 +144,6 @@ ylabel('Smoothed e^2[n] (log scale)');
 title('Learning curves for different adaptation gains (log y-axis)');
 legend('Location', 'northeast');
 
-% Optional zoom: stable-only learning curves for readability
 if any(~isDiverged)
     figure('Name', 'Smoothed Squared Error (\mu stable subset)');
     hold on;

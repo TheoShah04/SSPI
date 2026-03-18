@@ -15,7 +15,7 @@ end
 pVals = [2, 4, 8, 16, 32];
 muVals = [0.01, 0.05, 0.1, 0.3];
 
-ssWin = 200;  % steady-state window
+ssWin = 200;% steady-state window
 
 fprintf('Orders p: '); fprintf('%d ', pVals); fprintf('\n');
 fprintf('Mu values: '); fprintf('%.4f ', muVals); fprintf('\n\n');

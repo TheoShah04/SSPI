@@ -1,6 +1,4 @@
 function s = skewness(x)
-% Minimal skewness implementation (toolbox-free).
-% This is a biased estimator; sufficient for sign checks in ECG_to_RRI.
 
 x = x(:);
 x = x(~isnan(x));
